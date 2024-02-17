@@ -1,35 +1,111 @@
-#Strong Password Generator by Akshay (CLI Version 1.0)
+# passgenx - Strong password generator by Akshay
+import tkinter as tk
 import random
 import string
 
-class PasswordGenerator:
-    def __init__(self):
-        self.upper_case_var = True
-        self.lower_case_var = True
-        self.numbers_var = True
-        self.special_char_var = True
+class PasswordGeneratorApp:
+    def __init__(self, master):
+        self.master = master
+        master.title("Password Generator by Akshay")
+        
+        # Define dark theme colors
+        self.primary_color = "#121212"  # Dark grey background
+        self.secondary_color = "#323232"  # Lighter grey background for buttons
+        self.button_color = "#757575"  # Grey button color
+        self.text_color = "#FFFFFF"  # White text color
 
-    def generate_password(self, length):
+        # Set dark theme background color
+        master.config(bg=self.primary_color)
+
+        # Set font
+        self.font = ("Arial", 14)
+
+        # Welcome message
+        self.welcome_label = tk.Label(master, text="Generate Strong Password for Security", font=("Arial", 16, "bold"), bg=self.primary_color, fg=self.text_color)
+        self.welcome_label.pack(pady=20)
+
+        # Password length label
+        self.label = tk.Label(master, text="Password Length:", font=self.font, bg=self.primary_color, fg=self.text_color)
+        self.label.pack()
+
+        # Password length entry
+        self.length_entry = tk.Entry(master, font=self.font)
+        self.length_entry.pack()
+
+        # Checkboxes
+        self.upper_case_var = tk.IntVar()
+        self.upper_case_checkbox = tk.Checkbutton(master, text="Uppercase Letters", variable=self.upper_case_var, font=self.font, bg=self.primary_color, fg=self.text_color, selectcolor=self.secondary_color)
+        self.upper_case_checkbox.pack(anchor="w")
+
+        self.lower_case_var = tk.IntVar()
+        self.lower_case_checkbox = tk.Checkbutton(master, text="Lowercase Letters", variable=self.lower_case_var, font=self.font, bg=self.primary_color, fg=self.text_color, selectcolor=self.secondary_color)
+        self.lower_case_checkbox.pack(anchor="w")
+
+        self.numbers_var = tk.IntVar()
+        self.numbers_checkbox = tk.Checkbutton(master, text="Numbers", variable=self.numbers_var, font=self.font, bg=self.primary_color, fg=self.text_color, selectcolor=self.secondary_color)
+        self.numbers_checkbox.pack(anchor="w")
+
+        self.special_char_var = tk.IntVar()
+        self.special_char_checkbox = tk.Checkbutton(master, text="Special Characters", variable=self.special_char_var, font=self.font, bg=self.primary_color, fg=self.text_color, selectcolor=self.secondary_color)
+        self.special_char_checkbox.pack(anchor="w")
+
+        # Generate button
+        self.generate_button = tk.Button(master, text="Generate Password", command=self.generate_password, font=self.font, bg=self.button_color, fg=self.text_color, highlightthickness=0)
+        self.generate_button.pack(fill="x", pady=5)
+
+        # Check strength button
+        self.strength_button = tk.Button(master, text="Password Strength", command=self.check_strength, font=self.font, bg=self.button_color, fg=self.text_color, highlightthickness=0)
+        self.strength_button.pack(fill="x", pady=5)
+
+        # Copy to clipboard button
+        self.copy_button = tk.Button(master, text="Copy to Clipboard", command=self.copy_to_clipboard, font=self.font, bg=self.button_color, fg=self.text_color, highlightthickness=0)
+        self.copy_button.pack(fill="x", pady=5)
+
+        # Password label
+        self.password_label = tk.Label(master, text="", font=self.font, bg=self.primary_color, fg=self.text_color)
+        self.password_label.pack()
+
+        # Strength label
+        self.strength_label = tk.Label(master, text="", font=self.font, bg=self.primary_color, fg=self.text_color)
+        self.strength_label.pack()
+
+        # Copy label
+        self.copy_label = tk.Label(master, text="", font=self.font, bg=self.primary_color, fg=self.text_color)
+        self.copy_label.pack()
+
+    def generate_password(self):
+        length_str = self.length_entry.get().strip()
+        if not length_str:
+            self.password_label.config(text="Please provide a password length.")
+            return
+
+        length = int(length_str)
         password = ''
-        chars = ''
 
-        if self.upper_case_var:
-            chars += string.ascii_uppercase
-        if self.lower_case_var:
-            chars += string.ascii_lowercase
-        if self.numbers_var:
-            chars += string.digits
-        if self.special_char_var:
-            chars += string.punctuation
+        if self.upper_case_var.get():
+            password += string.ascii_uppercase
+        if self.lower_case_var.get():
+            password += string.ascii_lowercase
+        if self.numbers_var.get():
+            password += string.digits
+        if self.special_char_var.get():
+            password += string.punctuation
 
-        if not chars:
-            return "Please select at least one character type."
+        if not password:
+            self.password_label.config(text="Please select at least one character type.")
+            return
 
-        password = ''.join(random.choice(chars) for i in range(length))
-        strength = self.check_strength(password)
-        return password, strength
+        password = ''.join(random.choice(password) for i in range(length))
+        self.password_label.config(text=password)
+        self.strength_label.config(text="")
+        self.copy_label.config(text="")
 
-    def check_strength(self, password):
+    def check_strength(self):
+        password = self.password_label.cget("text")
+        if not password:
+            self.strength_label.config(text="No password generated yet.")
+            return
+
         has_lower = any(char.islower() for char in password)
         has_upper = any(char.isupper() for char in password)
         has_digit = any(char.isdigit() for char in password)
@@ -37,47 +113,23 @@ class PasswordGenerator:
         length = len(password)
 
         if has_lower and has_upper and has_digit and has_special_char and length >= 12:
-            return "Strong"
+            strength = "Strong"
         elif (has_lower or has_upper) and has_special_char and length >= 8:
-            return "Moderate"
+            strength = "Moderate"
         else:
-            return "Weak"
+            strength = "Weak"
 
-def main():
-    print("Welcome to Strong Password Generator developed by Akshay")
-    password_generator = PasswordGenerator()
+        self.strength_label.config(text=f"Password Strength: {strength}")
+        self.copy_label.config(text="")
 
-    while True:
-        print("\nMenu:")
-        print("1. Generate Password")
-        print("2. Check Password Strength")
-        print("3. Exit")
+    def copy_to_clipboard(self):
+        password = self.password_label.cget("text")
+        if password:
+            self.master.clipboard_clear()
+            self.master.clipboard_append(password)
+            self.master.update()  # Required on macOS
+            self.copy_label.config(text="Password copied to clipboard.")
 
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            length = int(input("Enter password length: "))
-            include_upper = input("Include uppercase letters? (y/n): ").strip().lower() or 'y'
-            include_lower = input("Include lowercase letters? (y/n): ").strip().lower() or 'y'
-            include_numbers = input("Include numbers? (y/n): ").strip().lower() or 'y'
-            include_special = input("Include special characters? (y/n): ").strip().lower() or 'y'
-            
-            password_generator.upper_case_var = include_upper == 'y'
-            password_generator.lower_case_var = include_lower == 'y'
-            password_generator.numbers_var = include_numbers == 'y'
-            password_generator.special_char_var = include_special == 'y'
-            
-            generated_password, strength = password_generator.generate_password(length)
-            print("Generated Password:", generated_password)
-            print("Password Strength:", strength)
-        elif choice == "2":
-            password = input("Enter password: ")
-            print("Password Strength:", password_generator.check_strength(password))
-        elif choice == "3":
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please enter a valid option.")
-
-if __name__ == "__main__":
-    main()
+root = tk.Tk()
+app = PasswordGeneratorApp(root)
+root.mainloop()
